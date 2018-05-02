@@ -1,7 +1,14 @@
 var router = require('express').Router();
 var weixin = require('../api/weixin');
-var multipart = require('connect-multiparty');
-var multipartMiddleware = multipart();
+var fs = require('fs');
+//var multipart = require('connect-multiparty');
+//var multipartMiddleware = multipart();
+var multer = require('multer');
+var upload = multer({
+	dest: 'upload_tmp/',
+	preservePath:true
+	
+});
 
 var config = require('../config/config');
 var aotuConfig = config.wx_config.aotu;
@@ -92,10 +99,23 @@ router.post('/', function(req, res, next) {
 	weixin.loop(req, res);
 });
 
-router.post('/image-add', multipartMiddleware, function(req, res, next) {
-	console.log('aaaaa')
-	console.log(req.body)
-	console.log(req.files)
+router.post('/image-add', upload.any(), function(req, res, next) {
+	console.log(req.files[0]); // 上传的文件信息
+	var des_file = "./upload/" + req.files[0].originalname;
+	fs.readFile(req.files[0].path, function(err, data) {
+		fs.writeFile(des_file, data, function(err) {
+			if(err) {
+				console.log(err);
+			} else {
+				response = {
+					message: 'File uploaded successfully',
+					filename: req.files[0].originalname
+				};
+				console.log(response);
+				res.end(JSON.stringify(response));
+			}
+		})
+	}) 
 });
 
 weixin.token = aotuConfig.token;
