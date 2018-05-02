@@ -78,15 +78,13 @@ router.get('/userlist', function(req, res, next) {
 
 router.get('/editUserRemarkName', function(req, res, next) {
 	res.render('index.html', {
-		menu: menu,
-		type: 'remarkname'
+		menu: menu
 	})
 })
 
 router.get('/usergroup', function(req, res, next) {
 	res.render('index.html', {
-		menu: menu,
-		type: 'usergroup'
+		menu: menu
 	})
 })
 
