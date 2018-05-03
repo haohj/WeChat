@@ -17,7 +17,6 @@ var keywords = require('../config/keywords');
 var wxuser = require('../vo/wxuser')
 
 router.get('/', function(req, res, next) {
-	//	console.log(req.originalUrl)
 	if(isEmptyObject(req.query)) {
 		res.render('login.html')
 	} else {
