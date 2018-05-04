@@ -114,6 +114,13 @@ module.exports = {
 					name: '模板消息',
 					path: ''
 				}]
+			},
+			menuManger: {
+				name: '菜单管理',
+				childMenu: [{
+					name: '微信菜单管理',
+					path: '/wx-menu-list'
+				}]
 			}
 		}
 	}

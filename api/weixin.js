@@ -287,7 +287,7 @@ WeiXin.prototype.getUser = function(options, callback) {
 }
 
 //获取用户信息
-WeiXin.prototype.getUserList = function(options, callback) {
+WeiXin.prototype.getUserList = (options, callback) => {
 	var that = this;
 	util.getToken(aotuConfig, function(result) {
 		if (result.err) {
@@ -317,9 +317,9 @@ WeiXin.prototype.getUserList = function(options, callback) {
 }
 
 //用户上传临时素材
-WeiXin.prototype.uploadMaterial = function(options, callback) {
+WeiXin.prototype.uploadMaterial = (options, callback) => {
 	var that = this;
-	util.getToken(aotuConfig, function(result) {
+	util.getToken(aotuConfig, (result) => {
 		if (result.err) {
 			return callback({
 				err: 1,
@@ -340,17 +340,17 @@ WeiXin.prototype.uploadMaterial = function(options, callback) {
 			uploadType = 'thumb'
 		}
 
-		if (options.duration == 0) {
+		if (options.duration != 1) {
 			//上传临时素材
-			fs.stat(filePath, function(err, stat) {
+			fs.stat(filePath, (err, stat) => {
 				//uploadType就是媒体文件的类型，image,voice,video,thumb等
-				var url = 'https://api.weixin.qq.com/cgi-bin/media/upload?access_token=' + access_token + '&type=' + uploadType;
+				let url = 'https://api.weixin.qq.com/cgi-bin/media/upload?access_token=' + access_token + '&type=' + uploadType;
 				var form = formstream();
 				//将文档中媒体文件需要的filename，filelength参数加到要上传的表单，content-type不知道为啥没有，可能自带吧
 				form.file('media', filePath, fileName, stat.size);
 				var upload = request.post(url, {
 					headers: form.headers()
-				}, function(err, httpResponse, body) {
+				}, (err, httpResponse, body) => {
 					if (err) {
 						return console.error('上传失败:', err);
 					}
@@ -364,6 +364,131 @@ WeiXin.prototype.uploadMaterial = function(options, callback) {
 
 		}
 	});
+}
+
+//用户创建微信菜单
+WeiXin.prototype.createMenu = function(options, callback) {
+	var that = this;
+	util.getToken(aotuConfig, function(result) {
+		if (result.err) {
+			return callback({
+				err: 1,
+				msg: result.err
+			});
+		}
+		let access_token = result.data.access_token;
+		let url = 'https://api.weixin.qq.com/cgi-bin/menu/create?access_token=' + access_token
+		let formData = {
+			button: [{
+				type: "click",
+				name: "今日歌曲",
+				key: "V1001_TODAY_MUSIC"
+			}, {
+				name: "菜单",
+				sub_button: [{
+					type: "view",
+					name: "搜索",
+					url: "http://www.soso.com/"
+				}, {
+					type: "miniprogram",
+					name: "wxa",
+					url: "http://mp.weixin.qq.com",
+					appid: "wx286b93c14bbf93aa",
+					pagepath: "pages/lunar/index"
+				}, {
+					type: "click",
+					name: "赞一下我们",
+					key: "V1001_GOOD"
+				}]
+			}]
+		}
+		request.post({
+			url: url,
+			form: formData
+		}, function(err, res, body) {
+			//如果失败
+			if (err) {
+				return callback({
+					err: 1,
+					msg: err
+				})
+			}
+
+			//如果成功
+			return callback({
+				err: 0,
+				msg: JSON.parse(body)
+			});
+		})
+
+	})
+}
+
+
+//用户删除微信菜单
+WeiXin.prototype.deleteMenu = function(callback) {
+	util.getToken(aotuConfig, function(result) {
+		if (result.err) {
+			return callback({
+				err: 1,
+				msg: result.err
+			});
+		}
+		let access_token = result.data.access_token;
+		let url = 'https://api.weixin.qq.com/cgi-bin/menu/delete?access_token=' + access_token;
+
+		request.get({
+			url: url
+		}, (err, res, body) => {
+			//如果失败
+			if (err) {
+				return callback({
+					err: 1,
+					msg: err
+				})
+			}
+
+			//如果成功
+			return callback({
+				err: 0,
+				msg: JSON.parse(body)
+			})
+		})
+
+	})
+}
+
+//微信自定义菜单查询
+WeiXin.prototype.queryMenu = function(callback) {
+	util.getToken(aotuConfig, function(result) {
+		if (result.err) {
+			return callback({
+				err: 1,
+				msg: result.err
+			});
+		}
+		let access_token = result.data.access_token;
+		let url = 'https://api.weixin.qq.com/cgi-bin/menu/get?access_token=' + access_token;
+
+		request.get({
+			url: url
+		}, (err, res, body) => {
+			//如果失败
+			if (err) {
+				return callback({
+					err: 1,
+					msg: err
+				})
+			}
+
+			//如果成功
+			return callback({
+				err: 0,
+				msg: JSON.parse(body)
+			})
+		})
+
+	})
 }
 
 module.exports = new WeiXin();

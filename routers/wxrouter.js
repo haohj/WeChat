@@ -1,19 +1,20 @@
-var router = require('express').Router();
-var weixin = require('../api/weixin');
-var fs = require('fs');
-
-var multer = require('multer');
-var upload = multer({
+const router = require('express').Router();
+const weixin = require('../api/weixin');
+const fs = require('fs');
+const multer = require('multer');
+const upload = multer({
 	dest: 'upload_tmp/',
 	preservePath: true
 
 });
 
-var config = require('../config/config');
-var aotuConfig = config.wx_config.aotu;
-var menu = config.web_config.menu;
-var keywords = require('../config/keywords');
-var wxuser = require('../vo/wxuser')
+const config = require('../config/config');
+const aotuConfig = config.wx_config.aotu;
+const menu = config.web_config.menu;
+const keywords = require('../config/keywords');
+const wxuser = require('../vo/wxuser')
+
+weixin.token = aotuConfig.token;
 
 router.get('/', function(req, res, next) {
 	if (isEmptyObject(req.query)) {
@@ -119,7 +120,7 @@ router.post('/image-add', upload.any(), function(req, res, next) {
 					filePath: des_file,
 					fileName: req.files[0].originalname,
 					type: type,
-					duration:req.body.type
+					duration: req.body.type
 				}
 				weixin.uploadMaterial(options, function(data) {
 					console.log(data);
@@ -131,7 +132,46 @@ router.post('/image-add', upload.any(), function(req, res, next) {
 	})
 });
 
-weixin.token = aotuConfig.token;
+
+router.get('/wx-menu-list', (req, res, next) => {
+	res.render('menu-list.html', {
+		menu: menu,
+	})
+})
+
+router.get('/deleteMenu', (req, res, next) => {
+	console.log('后台接收的删除菜单指令');
+	weixin.deleteMenu((data) => {
+		if (data.err == '1') {
+			res.status(200).send({
+				sussce: false,
+				errMsg: '删除失败！'
+			})
+		} else if (data.err == '0') {
+			res.status(200).send({
+				sussce: false,
+				data: data.msg
+			})
+		}
+	})
+})
+
+router.get('/query-menu-list', (req, res, next) => {
+	console.log('后台接收的查询菜单指令');
+	weixin.queryMenu((data) => {
+		if (data.err == '1') {
+			res.status(200).send({
+				sussce: false,
+				errMsg: '删除失败！'
+			})
+		} else if (data.err == '0') {
+			res.status(200).send({
+				sussce: false,
+				data: data.msg
+			})
+		}
+	})
+})
 
 weixin.textMsg(function(msg) {
 	var msgContent = trim(msg.content);

@@ -87,7 +87,18 @@
 							<ul class="am-list admin-sidebar-sub am-collapse am-in" id="collapse-message">
 								{{each menu.messageManger.childMenu}}
 								<li>
-									<a href="admin-user.html" class="am-cf"><span class="am-icon-table"></span> {{$value.name}}<span class="am-fr am-margin-right"></span></a>
+									<a href="{{$value.path}}" class="am-cf"><span class="am-icon-table"></span> {{$value.name}}<span class="am-fr am-margin-right"></span></a>
+								</li>
+								{{/each}}
+							</ul>
+						</li>
+
+						<li>
+							<a class="am-cf" data-am-collapse="{target: '#collapse-menu'}"><span class="am-icon-envelope-o"></span> {{menu.menuManger.name}}<span class="am-icon-angle-right am-fr am-margin-right"></span></a>
+							<ul class="am-list admin-sidebar-sub am-collapse am-in" id="collapse-menu">
+								{{each menu.menuManger.childMenu}}
+								<li>
+									<a href="{{$value.path}}" class="am-cf"><span class="am-icon-table"></span> {{$value.name}}<span class="am-fr am-margin-right"></span></a>
 								</li>
 								{{/each}}
 							</ul>
@@ -137,6 +148,9 @@
 		<script src="../public/AmazeUI-2.7.2/assets/js/app.js"></script>
 
 	</body>
+
 	{{block 'script'}}{{/block}}
+
+	
 
 </html>
