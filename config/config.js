@@ -1,4 +1,10 @@
 module.exports = {
+	db_config: {
+		host: 'localhost',
+		user: 'root',
+		password: '123',
+		database: 'test2'
+	},
 	wx_config: {
 		aotu: {
 			token: 'haohj94',
@@ -89,30 +95,25 @@ module.exports = {
 			userManger: {
 				name: '用户管理',
 				childMenu: [{
-						name: '用户分组管理',
-						path: '/usergroup'
-					},
-					{
-						name: '设置用户备注名',
-						path: '/editUserRemarkName'
-					},
-					{
-						name: '用户列表',
-						path: '/userlist'
-					}
-				]
+					name: '用户分组管理',
+					path: '/usergroup'
+				}, {
+					name: '设置用户备注名',
+					path: '/editUserRemarkName'
+				}, {
+					name: '用户列表',
+					path: '/userlist'
+				}]
 			},
-			messageManger:{
-				name:'消息管理',
+			messageManger: {
+				name: '消息管理',
 				childMenu: [{
-						name: '群发消息',
-						path: ''
-					},
-					{
-						name: '模板消息',
-						path: ''
-					}
-				]
+					name: '群发消息',
+					path: ''
+				}, {
+					name: '模板消息',
+					path: ''
+				}]
 			}
 		}
 	}

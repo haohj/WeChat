@@ -1,9 +1,11 @@
-var sha1 = require('sha1'),
-	xml2js = require('xml2js'),
-	events = require('events'),
-	emitter = new events.EventEmitter(),
-	util = require('../util/util'),
-	request = require('request');
+const sha1 = require('sha1')
+const xml2js = require('xml2js') //xml转json库
+const events = require('events')
+const emitter = new events.EventEmitter()
+const util = require('../util/util') //获取token工具库
+const request = require('request') //http请求库
+const fs = require('node-fs'); //文件操作库
+const formstream = require('formstream'); //http发送post请求构造表单数据的库
 
 var config = require('../config/config');
 var aotuConfig = config.wx_config.aotu;
@@ -25,7 +27,7 @@ WeiXin.prototype.checkSignature = function(req) {
 	var str = [this.token, this.timestamp, this.nonce].sort().join('')
 	var sha = sha1(str)
 
-	return(sha == this.signature)
+	return (sha == this.signature)
 
 }
 
@@ -40,7 +42,7 @@ WeiXin.prototype.loop = function(req, res) {
 	});
 	req.on('end', function() {
 		xml2js.parseString(buf, function(err, json) {
-			if(err) {
+			if (err) {
 				err.status = 400;
 			} else {
 				req.body = json;
@@ -100,7 +102,7 @@ WeiXin.prototype.locationMsg = function(callback) {
 
 WeiXin.prototype.parse = function() {
 	this.msgType = this.data.MsgType[0] ? this.data.MsgType[0] : 'text';
-	switch(this.msgType) {
+	switch (this.msgType) {
 		case 'text':
 			this.parseTextMsg();
 			break;
@@ -117,7 +119,7 @@ WeiXin.prototype.parse = function() {
 }
 
 WeiXin.prototype.sendMsg = function(msg) {
-	switch(msg.msgType) {
+	switch (msg.msgType) {
 		case 'text':
 			this.sendTextMsg(msg);
 			break;
@@ -162,7 +164,7 @@ WeiXin.prototype.parseTextMsg = function() {
 
 WeiXin.prototype.parseEventMsg = function() {
 	var eventKey = '';
-	if(this.data.EventKey) {
+	if (this.data.EventKey) {
 		eventKey = this.data.EventKey[0];
 	}
 	var msg = {
@@ -174,15 +176,15 @@ WeiXin.prototype.parseEventMsg = function() {
 		"eventKey": eventKey
 	}
 
-	if(this.data.ScanCodeInfo) {
+	if (this.data.ScanCodeInfo) {
 		msg.scanCodeInfo = this.data.ScanCodeInfo[0];
 	}
 
-	if(this.data.Latitude) {
+	if (this.data.Latitude) {
 		msg.Latitude = this.data.Latitude[0];
 	}
 
-	if(this.data.Longitude) {
+	if (this.data.Longitude) {
 		msg.Longitude = this.data.Longitude[0];
 	}
 
@@ -207,7 +209,7 @@ WeiXin.prototype.parseLocationMsg = function() {
 }
 
 WeiXin.prototype.sendTextMsg = function(msg) {
-	if(msg.content == '') {
+	if (msg.content == '') {
 		this.res.type('string');
 		this.res.send('');
 		return this;
@@ -256,7 +258,7 @@ WeiXin.prototype.sendImageMsg = function(msg) {
 WeiXin.prototype.getUser = function(options, callback) {
 	var self = this;
 	util.getToken(aotuConfig, function(result) {
-		if(result.err) {
+		if (result.err) {
 			return callback({
 				err: 1,
 				msg: result.err
@@ -264,7 +266,7 @@ WeiXin.prototype.getUser = function(options, callback) {
 		}
 		var access_token = result.data.access_token;
 		var url = 'https://api.weixin.qq.com/cgi-bin/user/info?access_token=' + access_token + '&openid=' + options.openId + '&lang=';
-		if(options.lang) {
+		if (options.lang) {
 			url += options.lang;
 		} else {
 			url += 'zh_CN';
@@ -272,7 +274,7 @@ WeiXin.prototype.getUser = function(options, callback) {
 		request.get({
 			url: url
 		}, function(error, httpResponse, body) {
-			if(error) return callback({
+			if (error) return callback({
 				err: 1,
 				msg: error
 			});
@@ -288,7 +290,7 @@ WeiXin.prototype.getUser = function(options, callback) {
 WeiXin.prototype.getUserList = function(options, callback) {
 	var that = this;
 	util.getToken(aotuConfig, function(result) {
-		if(result.err) {
+		if (result.err) {
 			return callback({
 				err: 1,
 				msg: result.err
@@ -296,13 +298,13 @@ WeiXin.prototype.getUserList = function(options, callback) {
 		}
 		var access_token = result.data.access_token;
 		var url = 'https://api.weixin.qq.com/cgi-bin/user/get?access_token=' + access_token
-		if(options) {
+		if (options) {
 			url += '&next_openid=' + options.openId
 		}
 		request.get({
 			url: url
 		}, function(error, httpResponse, body) {
-			if(error) return callback({
+			if (error) return callback({
 				err: 1,
 				msg: error
 			});
@@ -311,6 +313,56 @@ WeiXin.prototype.getUserList = function(options, callback) {
 				msg: JSON.parse(body)
 			});
 		});
+	});
+}
+
+//用户上传临时素材
+WeiXin.prototype.uploadMaterial = function(options, callback) {
+	var that = this;
+	util.getToken(aotuConfig, function(result) {
+		if (result.err) {
+			return callback({
+				err: 1,
+				msg: result.err
+			});
+		}
+		let access_token = result.data.access_token;
+		let filePath = options.filePath
+		let fileName = options.fileName
+		let uploadType = ''
+		if (options.type == 'image') {
+			uploadType = 'image'
+		} else if (options.type == 'audio') {
+			uploadType = 'voice'
+		} else if (options.type == 'video') {
+			uploadType = 'video'
+		} else if (options.type == 'thumb') {
+			uploadType = 'thumb'
+		}
+
+		if (options.duration == 0) {
+			//上传临时素材
+			fs.stat(filePath, function(err, stat) {
+				//uploadType就是媒体文件的类型，image,voice,video,thumb等
+				var url = 'https://api.weixin.qq.com/cgi-bin/media/upload?access_token=' + access_token + '&type=' + uploadType;
+				var form = formstream();
+				//将文档中媒体文件需要的filename，filelength参数加到要上传的表单，content-type不知道为啥没有，可能自带吧
+				form.file('media', filePath, fileName, stat.size);
+				var upload = request.post(url, {
+					headers: form.headers()
+				}, function(err, httpResponse, body) {
+					if (err) {
+						return console.error('上传失败:', err);
+					}
+					console.log('上传成功！服务器相应结果:', body);
+				});
+				//不懂这个是干嘛的
+				form.pipe(upload);
+			});
+
+		} else {
+
+		}
 	});
 }
 

@@ -1,12 +1,9 @@
 'use strict'
 
 var mysql = require('mysql');
-var conn = mysql.createConnection({
-	host: 'localhost',
-	user: 'root',
-	password: '123',
-	database: 'test2'
-})
+var config = require('../config/config');
+var dbConfig = config.db_config;
+var conn = mysql.createConnection(dbConfig)
 
 conn.connect();
 
