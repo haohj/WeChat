@@ -256,7 +256,6 @@ WeiXin.prototype.sendImageMsg = function(msg) {
 
 //获取用户信息
 WeiXin.prototype.getUser = function(options, callback) {
-	var self = this;
 	util.getToken(aotuConfig, function(result) {
 		if (result.err) {
 			return callback({
@@ -288,7 +287,6 @@ WeiXin.prototype.getUser = function(options, callback) {
 
 //获取用户信息
 WeiXin.prototype.getUserList = (options, callback) => {
-	var that = this;
 	util.getToken(aotuConfig, function(result) {
 		if (result.err) {
 			return callback({
@@ -318,7 +316,6 @@ WeiXin.prototype.getUserList = (options, callback) => {
 
 //用户上传临时素材
 WeiXin.prototype.uploadMaterial = (options, callback) => {
-	var that = this;
 	util.getToken(aotuConfig, (result) => {
 		if (result.err) {
 			return callback({
