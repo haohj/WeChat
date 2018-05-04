@@ -367,48 +367,44 @@ WeiXin.prototype.uploadMaterial = (options, callback) => {
 }
 
 //用户创建微信菜单
-WeiXin.prototype.createMenu = function(options, callback) {
-	var that = this;
-	util.getToken(aotuConfig, function(result) {
-		if (result.err) {
-			return callback({
-				err: 1,
-				msg: result.err
-			});
-		}
-		let access_token = result.data.access_token;
-		let url = 'https://api.weixin.qq.com/cgi-bin/menu/create?access_token=' + access_token
-		console.log(options);
+WeiXin.prototype.createMenu = function(options) {
+	const promise = new Promise((resolve, reject) => {
+		util.getToken(aotuConfig, (result) => {
+			if (result.err) {
+				reject(result.err);
+			}
 
+			let access_token = result.data.access_token;
+			let url = 'https://api.weixin.qq.com/cgi-bin/menu/create?access_token=' + access_token
+			console.log(options);
 
-		/*request({
-				method: 'POST',
-				uri: url,
-				multipart: [{
-					'content-type': 'application/json',
-					body: JSON.stringify(options)
-				}]
-			},
-			(err, response, body) => {
+			request.post({
+				url: url,
+				form: options
+			}, (err, res, body) => {
 				//如果失败
 				if (err) {
-					return callback({
-						err: 1,
-						msg: err
-					})
+					reject(err)
 				}
 
 				//如果成功
-				return callback({
-					err: 0,
-					msg: JSON.parse(body)
-				})
-			})*/
+				resolve(JSON.parse(body));
+			})
 
-		request.post({
-			url: url,
-			form: options
-		}, function(err, res, body) {
+		})
+	})
+
+	return promise
+
+	/*request({
+			method: 'POST',
+			uri: url,
+			multipart: [{
+				'content-type': 'application/json',
+				body: JSON.stringify(options)
+			}]
+		},
+		(err, response, body) => {
 			//如果失败
 			if (err) {
 				return callback({
@@ -421,10 +417,8 @@ WeiXin.prototype.createMenu = function(options, callback) {
 			return callback({
 				err: 0,
 				msg: JSON.parse(body)
-			});
-		})
-
-	})
+			})
+		})*/
 }
 
 
@@ -434,10 +428,7 @@ WeiXin.prototype.deleteMenu = (callback) => {
 		util.getToken(aotuConfig, (result) => {
 
 			if (result.err) {
-				reject({
-					err: 1,
-					msg: result.err
-				});
+				reject(result.err);
 			}
 
 			let access_token = result.data.access_token;
@@ -466,10 +457,7 @@ WeiXin.prototype.queryMenu = () => {
 	const promise = new Promise((resolve, reject) => {
 		util.getToken(aotuConfig, (result) => {
 			if (result.err) {
-				reject({
-					err: 1,
-					msg: result.err
-				})
+				reject(result.err)
 			}
 			let access_token = result.data.access_token;
 			let url = 'https://api.weixin.qq.com/cgi-bin/menu/get?access_token=' + access_token;
@@ -479,17 +467,11 @@ WeiXin.prototype.queryMenu = () => {
 			}, (err, res, body) => {
 				//如果失败
 				if (err) {
-					reject({
-						err: 1,
-						msg: err
-					})
+					reject(err)
 				}
 
 				//如果成功
-				resolve({
-					err: 0,
-					msg: JSON.parse(body)
-				})
+				resolve(JSON.parse(body))
 			})
 
 		})
