@@ -11,7 +11,7 @@
 			<div class="am-btn-group am-btn-group-xs">
 				<a href="/image-add" class="am-btn am-btn-default"><span class="am-icon-plus"></span> 新增</a>
 				<button type="button" class="am-btn am-btn-default"><span class="am-icon-save"></span> 保存</button>
-				<button type="button" class="am-btn am-btn-default"><span class="am-icon-archive"></span> 审核</button>
+				<button type="button" class="am-btn am-btn-default" onclick="publishMenu()"><span class="am-icon-archive"></span> 审核</button>
 				<button type="button" class="am-btn am-btn-default" onclick="deleteMenu()"><span class="am-icon-trash-o"></span> 删除</button>
 				<button type="button" class="am-btn am-btn-default" onclick="refreshMenu()"><span class="am-icon-refresh"></span> 刷新</button>
 			</div>
@@ -152,6 +152,20 @@
 		$.ajax({
 			method: 'get',
 			url: '/deleteMenu',
+			data: {
+
+			}
+		}).then((data) =>{
+			console.info(data);
+		}, () => {
+
+		})
+	}
+
+	var publishMenu = () =>{
+		$.ajax({
+			method: 'get',
+			url: '/publish-menu',
 			data: {
 
 			}

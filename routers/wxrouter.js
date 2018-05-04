@@ -141,18 +141,16 @@ router.get('/wx-menu-list', (req, res, next) => {
 
 router.get('/deleteMenu', (req, res, next) => {
 	console.log('后台接收的删除菜单指令');
-	weixin.deleteMenu((data) => {
-		if (data.err == '1') {
-			res.status(200).send({
-				sussce: false,
-				errMsg: '删除失败！'
-			})
-		} else if (data.err == '0') {
-			res.status(200).send({
-				sussce: false,
-				data: data.msg
-			})
-		}
+	weixin.deleteMenu().then((data) => {
+		res.status(200).send({
+			sussce: false,
+			data: data.msg
+		})
+	}, (err) => {
+		res.status(200).send({
+			sussce: false,
+			errMsg: '删除失败！'
+		})
 	})
 })
 
@@ -172,6 +170,42 @@ router.get('/query-menu-list', (req, res, next) => {
 		}
 	})
 })
+
+router.get('/publish-menu', (req, res, next) => {
+	console.log('后台接收的发布菜单指令');
+	//查询菜单
+	weixin.queryMenu().then((data) => {
+		//成功
+		console.log('菜单:');
+		console.log(data);
+	}, (data) => {
+		//失败
+		console.log('失败了:');
+		console.log(data);
+	})
+	let options = {
+		"button": [{
+			"type": "click",
+			"name": "发送位置",
+			"key": "0"
+		}]
+	}
+	weixin.createMenu(options, (data) => {
+		if (data.err == '1') {
+			res.status(200).send({
+				sussce: false,
+				errMsg: '发布失败！'
+			})
+		} else if (data.err == '0') {
+			res.status(200).send({
+				sussce: false,
+				data: data.msg
+			})
+		}
+	})
+})
+
+
 
 weixin.textMsg(function(msg) {
 	var msgContent = trim(msg.content);

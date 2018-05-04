@@ -378,33 +378,36 @@ WeiXin.prototype.createMenu = function(options, callback) {
 		}
 		let access_token = result.data.access_token;
 		let url = 'https://api.weixin.qq.com/cgi-bin/menu/create?access_token=' + access_token
-		let formData = {
-			button: [{
-				type: "click",
-				name: "今日歌曲",
-				key: "V1001_TODAY_MUSIC"
-			}, {
-				name: "菜单",
-				sub_button: [{
-					type: "view",
-					name: "搜索",
-					url: "http://www.soso.com/"
-				}, {
-					type: "miniprogram",
-					name: "wxa",
-					url: "http://mp.weixin.qq.com",
-					appid: "wx286b93c14bbf93aa",
-					pagepath: "pages/lunar/index"
-				}, {
-					type: "click",
-					name: "赞一下我们",
-					key: "V1001_GOOD"
+		console.log(options);
+
+
+		/*request({
+				method: 'POST',
+				uri: url,
+				multipart: [{
+					'content-type': 'application/json',
+					body: JSON.stringify(options)
 				}]
-			}]
-		}
+			},
+			(err, response, body) => {
+				//如果失败
+				if (err) {
+					return callback({
+						err: 1,
+						msg: err
+					})
+				}
+
+				//如果成功
+				return callback({
+					err: 0,
+					msg: JSON.parse(body)
+				})
+			})*/
+
 		request.post({
 			url: url,
-			form: formData
+			form: options
 		}, function(err, res, body) {
 			//如果失败
 			if (err) {
@@ -426,69 +429,73 @@ WeiXin.prototype.createMenu = function(options, callback) {
 
 
 //用户删除微信菜单
-WeiXin.prototype.deleteMenu = function(callback) {
-	util.getToken(aotuConfig, function(result) {
-		if (result.err) {
-			return callback({
-				err: 1,
-				msg: result.err
-			});
-		}
-		let access_token = result.data.access_token;
-		let url = 'https://api.weixin.qq.com/cgi-bin/menu/delete?access_token=' + access_token;
+WeiXin.prototype.deleteMenu = (callback) => {
+	const promise = new Promise((resolve, reject) => {
+		util.getToken(aotuConfig, (result) => {
 
-		request.get({
-			url: url
-		}, (err, res, body) => {
-			//如果失败
-			if (err) {
-				return callback({
+			if (result.err) {
+				reject({
 					err: 1,
-					msg: err
-				})
+					msg: result.err
+				});
 			}
 
-			//如果成功
-			return callback({
-				err: 0,
-				msg: JSON.parse(body)
-			})
-		})
+			let access_token = result.data.access_token;
+			let url = 'https://api.weixin.qq.com/cgi-bin/menu/delete?access_token=' + access_token;
 
+			request.get({
+				url: url
+			}, (err, res, body) => {
+				//如果失败
+				if (err) {
+					reject(err)
+				}
+
+				//如果成功
+				resolve(JSON.parse(body))
+			})
+
+		})
 	})
+
+	return promise
 }
 
 //微信自定义菜单查询
-WeiXin.prototype.queryMenu = function(callback) {
-	util.getToken(aotuConfig, function(result) {
-		if (result.err) {
-			return callback({
-				err: 1,
-				msg: result.err
-			});
-		}
-		let access_token = result.data.access_token;
-		let url = 'https://api.weixin.qq.com/cgi-bin/menu/get?access_token=' + access_token;
-
-		request.get({
-			url: url
-		}, (err, res, body) => {
-			//如果失败
-			if (err) {
-				return callback({
+WeiXin.prototype.queryMenu = () => {
+	const promise = new Promise((resolve, reject) => {
+		util.getToken(aotuConfig, (result) => {
+			if (result.err) {
+				reject({
 					err: 1,
-					msg: err
+					msg: result.err
 				})
 			}
+			let access_token = result.data.access_token;
+			let url = 'https://api.weixin.qq.com/cgi-bin/menu/get?access_token=' + access_token;
 
-			//如果成功
-			return callback({
-				err: 0,
-				msg: JSON.parse(body)
+			request.get({
+				url: url
+			}, (err, res, body) => {
+				//如果失败
+				if (err) {
+					reject({
+						err: 1,
+						msg: err
+					})
+				}
+
+				//如果成功
+				resolve({
+					err: 0,
+					msg: JSON.parse(body)
+				})
 			})
-		})
 
+		})
 	})
+
+	return promise;
 }
 
 module.exports = new WeiXin();
