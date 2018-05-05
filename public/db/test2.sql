@@ -10,10 +10,25 @@ Target Server Type    : MYSQL
 Target Server Version : 50716
 File Encoding         : 65001
 
-Date: 2018-05-05 15:16:47
+Date: 2018-05-05 15:49:13
 */
 
 SET FOREIGN_KEY_CHECKS=0;
+
+-- ----------------------------
+-- Table structure for `tb_access_token`
+-- ----------------------------
+DROP TABLE IF EXISTS `tb_access_token`;
+CREATE TABLE `tb_access_token` (
+  `id` varchar(50) NOT NULL COMMENT 'id',
+  `access_token` varchar(200) DEFAULT NULL COMMENT 'access_token',
+  `expires_in` int(50) DEFAULT NULL COMMENT 'expires_in',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ----------------------------
+-- Records of tb_access_token
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for `tb_menu`
