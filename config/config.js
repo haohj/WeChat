@@ -2,7 +2,7 @@ module.exports = {
 	db_config: {
 		host: 'localhost',
 		user: 'root',
-		password: '123',
+		password: 'mysql',
 		database: 'test2'
 	},
 	wx_config: {

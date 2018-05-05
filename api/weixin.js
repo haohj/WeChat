@@ -4,6 +4,7 @@ const events = require('events')
 const emitter = new events.EventEmitter()
 const util = require('../util/util') //获取token工具库
 const request = require('request') //http请求库
+const rp = require('request-promise')
 const fs = require('node-fs'); //文件操作库
 const formstream = require('formstream'); //http发送post请求构造表单数据的库
 
@@ -27,7 +28,7 @@ WeiXin.prototype.checkSignature = function(req) {
 	var str = [this.token, this.timestamp, this.nonce].sort().join('')
 	var sha = sha1(str)
 
-	return (sha == this.signature)
+	return(sha == this.signature)
 
 }
 
@@ -42,7 +43,7 @@ WeiXin.prototype.loop = function(req, res) {
 	});
 	req.on('end', function() {
 		xml2js.parseString(buf, function(err, json) {
-			if (err) {
+			if(err) {
 				err.status = 400;
 			} else {
 				req.body = json;
@@ -102,7 +103,7 @@ WeiXin.prototype.locationMsg = function(callback) {
 
 WeiXin.prototype.parse = function() {
 	this.msgType = this.data.MsgType[0] ? this.data.MsgType[0] : 'text';
-	switch (this.msgType) {
+	switch(this.msgType) {
 		case 'text':
 			this.parseTextMsg();
 			break;
@@ -119,7 +120,7 @@ WeiXin.prototype.parse = function() {
 }
 
 WeiXin.prototype.sendMsg = function(msg) {
-	switch (msg.msgType) {
+	switch(msg.msgType) {
 		case 'text':
 			this.sendTextMsg(msg);
 			break;
@@ -164,7 +165,7 @@ WeiXin.prototype.parseTextMsg = function() {
 
 WeiXin.prototype.parseEventMsg = function() {
 	var eventKey = '';
-	if (this.data.EventKey) {
+	if(this.data.EventKey) {
 		eventKey = this.data.EventKey[0];
 	}
 	var msg = {
@@ -176,15 +177,15 @@ WeiXin.prototype.parseEventMsg = function() {
 		"eventKey": eventKey
 	}
 
-	if (this.data.ScanCodeInfo) {
+	if(this.data.ScanCodeInfo) {
 		msg.scanCodeInfo = this.data.ScanCodeInfo[0];
 	}
 
-	if (this.data.Latitude) {
+	if(this.data.Latitude) {
 		msg.Latitude = this.data.Latitude[0];
 	}
 
-	if (this.data.Longitude) {
+	if(this.data.Longitude) {
 		msg.Longitude = this.data.Longitude[0];
 	}
 
@@ -209,7 +210,7 @@ WeiXin.prototype.parseLocationMsg = function() {
 }
 
 WeiXin.prototype.sendTextMsg = function(msg) {
-	if (msg.content == '') {
+	if(msg.content == '') {
 		this.res.type('string');
 		this.res.send('');
 		return this;
@@ -257,7 +258,7 @@ WeiXin.prototype.sendImageMsg = function(msg) {
 //获取用户信息
 WeiXin.prototype.getUser = function(options, callback) {
 	util.getToken(aotuConfig, function(result) {
-		if (result.err) {
+		if(result.err) {
 			return callback({
 				err: 1,
 				msg: result.err
@@ -265,7 +266,7 @@ WeiXin.prototype.getUser = function(options, callback) {
 		}
 		var access_token = result.data.access_token;
 		var url = 'https://api.weixin.qq.com/cgi-bin/user/info?access_token=' + access_token + '&openid=' + options.openId + '&lang=';
-		if (options.lang) {
+		if(options.lang) {
 			url += options.lang;
 		} else {
 			url += 'zh_CN';
@@ -273,7 +274,7 @@ WeiXin.prototype.getUser = function(options, callback) {
 		request.get({
 			url: url
 		}, function(error, httpResponse, body) {
-			if (error) return callback({
+			if(error) return callback({
 				err: 1,
 				msg: error
 			});
@@ -288,7 +289,7 @@ WeiXin.prototype.getUser = function(options, callback) {
 //获取用户信息
 WeiXin.prototype.getUserList = (options, callback) => {
 	util.getToken(aotuConfig, function(result) {
-		if (result.err) {
+		if(result.err) {
 			return callback({
 				err: 1,
 				msg: result.err
@@ -296,13 +297,13 @@ WeiXin.prototype.getUserList = (options, callback) => {
 		}
 		var access_token = result.data.access_token;
 		var url = 'https://api.weixin.qq.com/cgi-bin/user/get?access_token=' + access_token
-		if (options) {
+		if(options) {
 			url += '&next_openid=' + options.openId
 		}
 		request.get({
 			url: url
 		}, function(error, httpResponse, body) {
-			if (error) return callback({
+			if(error) return callback({
 				err: 1,
 				msg: error
 			});
@@ -317,7 +318,7 @@ WeiXin.prototype.getUserList = (options, callback) => {
 //用户上传临时素材
 WeiXin.prototype.uploadMaterial = (options, callback) => {
 	util.getToken(aotuConfig, (result) => {
-		if (result.err) {
+		if(result.err) {
 			return callback({
 				err: 1,
 				msg: result.err
@@ -327,17 +328,17 @@ WeiXin.prototype.uploadMaterial = (options, callback) => {
 		let filePath = options.filePath
 		let fileName = options.fileName
 		let uploadType = ''
-		if (options.type == 'image') {
+		if(options.type == 'image') {
 			uploadType = 'image'
-		} else if (options.type == 'audio') {
+		} else if(options.type == 'audio') {
 			uploadType = 'voice'
-		} else if (options.type == 'video') {
+		} else if(options.type == 'video') {
 			uploadType = 'video'
-		} else if (options.type == 'thumb') {
+		} else if(options.type == 'thumb') {
 			uploadType = 'thumb'
 		}
 
-		if (options.duration != 1) {
+		if(options.duration != 1) {
 			//上传临时素材
 			fs.stat(filePath, (err, stat) => {
 				//uploadType就是媒体文件的类型，image,voice,video,thumb等
@@ -348,7 +349,7 @@ WeiXin.prototype.uploadMaterial = (options, callback) => {
 				var upload = request.post(url, {
 					headers: form.headers()
 				}, (err, httpResponse, body) => {
-					if (err) {
+					if(err) {
 						return console.error('上传失败:', err);
 					}
 					console.log('上传成功！服务器相应结果:', body);
@@ -367,64 +368,37 @@ WeiXin.prototype.uploadMaterial = (options, callback) => {
 WeiXin.prototype.createMenu = function(options) {
 	const promise = new Promise((resolve, reject) => {
 		util.getToken(aotuConfig, (result) => {
-			if (result.err) {
+			if(result.err) {
 				reject(result.err);
 			}
 
 			let access_token = result.data.access_token;
 			let url = 'https://api.weixin.qq.com/cgi-bin/menu/create?access_token=' + access_token
-			console.log(options);
 
-			request.post({
-				url: url,
-				form: options
-			}, (err, res, body) => {
-				//如果失败
-				if (err) {
+			rp({
+					method: 'POST',
+					uri: url,
+					body: options,
+					json: true
+				})
+				.then((res) => {
+					resolve(JSON.parse(res));
+				})
+				.catch((err) => {
 					reject(err)
-				}
-
-				//如果成功
-				resolve(JSON.parse(body));
-			})
-
+				});
 		})
 	})
 
 	return promise
-
-	/*request({
-			method: 'POST',
-			uri: url,
-			multipart: [{
-				'content-type': 'application/json',
-				body: JSON.stringify(options)
-			}]
-		},
-		(err, response, body) => {
-			//如果失败
-			if (err) {
-				return callback({
-					err: 1,
-					msg: err
-				})
-			}
-
-			//如果成功
-			return callback({
-				err: 0,
-				msg: JSON.parse(body)
-			})
-		})*/
 }
-
 
 //用户删除微信菜单
 WeiXin.prototype.deleteMenu = (callback) => {
 	const promise = new Promise((resolve, reject) => {
 		util.getToken(aotuConfig, (result) => {
 
-			if (result.err) {
+			if(result.err) {
 				reject(result.err);
 			}
 
@@ -435,7 +409,7 @@ WeiXin.prototype.deleteMenu = (callback) => {
 				url: url
 			}, (err, res, body) => {
 				//如果失败
-				if (err) {
+				if(err) {
 					reject(err)
 				}
 
@@ -453,7 +427,7 @@ WeiXin.prototype.deleteMenu = (callback) => {
 WeiXin.prototype.queryMenu = () => {
 	const promise = new Promise((resolve, reject) => {
 		util.getToken(aotuConfig, (result) => {
-			if (result.err) {
+			if(result.err) {
 				reject(result.err)
 			}
 			let access_token = result.data.access_token;
@@ -463,7 +437,7 @@ WeiXin.prototype.queryMenu = () => {
 				url: url
 			}, (err, res, body) => {
 				//如果失败
-				if (err) {
+				if(err) {
 					reject(err)
 				}
 
