@@ -6,8 +6,9 @@ var expireTime = 7200;
 var Util = {
   getToken: getToken,
   createTimeStamp: createTimeStamp,
-  isExpireTimeOut: isExpireTimeOut
-};
+  isExpireTimeOut: isExpireTimeOut,
+  findUser: findUser
+}
 
 function getToken(config, _callback) {
   //console.log(config);
@@ -72,17 +73,21 @@ function isExpireTimeOut(ts) {
 }
 
 
-findUser = (name, password) => {
-  console.log(name + '#####' + password);
-  wxuser.findAll().then((data) => {
-    return data.find(function(item) {
-      console.log(item.username + '$$$' + item.password)
-      return item.username === name && item.password === password;
+function findUser(name, password) {
+  //console.log(name + '#####' + password);
+  const promise = new Promise(resolve, reject) => {
+    wxuser.findAll().then((data) => {
+      return resolve(data.find(function(item) {
+        //console.log(item)
+        return item.username === name && item.password === password;
+      }))
+    }, (err) => {
+      console.log('查询失败');
+      reject(err)
     })
-  }, (err) => {
-    console.log('查询失败');
-    return
-  })
+  }
+
+  return promise
 }
 
 

@@ -1,5 +1,7 @@
 const router = require('express').Router()
 const weixin = require('../api/weixin')
+const util = require('../util/util') //获取token工具库
+
 const fs = require('fs')
 const multer = require('multer');
 const upload = multer({
@@ -135,7 +137,12 @@ router.post('/image-add', upload.any(), function(req, res, next) {
 // 登录接口
 router.post('/login', (req, res, next) => {
 	var sess = req.session;
-	var user = findUser(req.body.name, req.body.password)
+	let user = ''
+	util.findUser(req.body.name, req.body.password).then((data) => {
+		user = data
+	}, (err) => {
+		console.log(err);
+	})
 	console.log(user);
 	if (user) {
 		req.session.regenerate(function(err) {
