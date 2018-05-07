@@ -1,4 +1,5 @@
-var request = require('request');
+const request = require('request')
+const wxuser = require('../vo/wxuser')
 
 var expireTime = 7200;
 
@@ -69,5 +70,20 @@ function isExpireTimeOut(ts) {
   }
   return !!(createTimeStamp() - ts > expireTime);
 }
+
+
+findUser = (name, password) => {
+  console.log(name + '#####' + password);
+  wxuser.findAll().then((data) => {
+    return data.find(function(item) {
+      console.log(item.username + '$$$' + item.password)
+      return item.username === name && item.password === password;
+    })
+  }, (err) => {
+    console.log('查询失败');
+    return
+  })
+}
+
 
 module.exports = Util;

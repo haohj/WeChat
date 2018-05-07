@@ -1,6 +1,6 @@
-const router = require('express').Router();
-const weixin = require('../api/weixin');
-const fs = require('fs');
+const router = require('express').Router()
+const weixin = require('../api/weixin')
+const fs = require('fs')
 const multer = require('multer');
 const upload = multer({
 	dest: 'upload_tmp/',
@@ -17,16 +17,16 @@ const wxuser = require('../vo/wxuser')
 weixin.token = aotuConfig.token;
 
 router.get('/', function(req, res, next) {
-	if(isEmptyObject(req.query)) {
+	if (isEmptyObject(req.query)) {
 		res.render('login.html')
 	} else {
-		if(weixin.checkSignature(req)) {
+		if (weixin.checkSignature(req)) {
 			return res.status(200).send(req.query.echostr);
 		}
 	}
 
 	function isEmptyObject(obj) {
-		for(var key in obj) {
+		for (var key in obj) {
 			return false
 		};
 		return true
@@ -50,7 +50,7 @@ router.get('/getUserList', function(req, res, next) {
 	weixin.getUserList(function(data) {
 		console.log(data)
 		var content = ''
-		if(data.err) {
+		if (data.err) {
 			content = '获取ERROR：' + data.msg;
 		} else {
 			content = JSON.stringify(data.msg);
@@ -108,7 +108,7 @@ router.post('/image-add', upload.any(), function(req, res, next) {
 	var des_file = "./upload/" + req.files[0].originalname;
 	fs.readFile(req.files[0].path, function(err, data) {
 		fs.writeFile(des_file, data, function(err) {
-			if(err) {
+			if (err) {
 				console.log(err);
 			} else {
 				response = {
@@ -131,6 +131,53 @@ router.post('/image-add', upload.any(), function(req, res, next) {
 		})
 	})
 });
+
+// 登录接口
+router.post('/login', (req, res, next) => {
+	var sess = req.session;
+	var user = findUser(req.body.name, req.body.password)
+	console.log(user);
+	if (user) {
+		req.session.regenerate(function(err) {
+			if (err) {
+				return res.json({
+					ret_code: 2,
+					ret_msg: '登录失败'
+				});
+			}
+
+			req.session.loginUser = user.name
+			res.redirect('/index.html')
+		});
+	} else {
+		res.json({
+			ret_code: 1,
+			ret_msg: '账号或密码错误'
+		});
+	}
+})
+
+// 退出登录
+router.get('/logout', function(req, res, next) {
+	// 备注：这里用的 session-file-store 在destroy 方法里，并没有销毁cookie
+	// 所以客户端的 cookie 还是存在，导致的问题 --> 退出登陆后，服务端检测到cookie
+	// 然后去查找对应的 session 文件，报错
+	// session-file-store 本身的bug  
+
+	req.session.destroy(function(err) {
+		if (err) {
+			res.json({
+				ret_code: 2,
+				ret_msg: '退出登录失败'
+			});
+			return;
+		}
+
+		req.session.loginUser = null;
+		res.clearCookie(identityKey);
+		res.redirect('/');
+	})
+})
 
 router.get('/wx-menu-list', (req, res, next) => {
 	res.render('menu-list.html', {
@@ -202,10 +249,10 @@ weixin.textMsg(function(msg) {
 		funcFlag: 0
 	};
 
-	if(!!keywords.exactKey[msgContent]) {
+	if (!!keywords.exactKey[msgContent]) {
 		resMsg.content = keywords.exactKey[msgContent].content;
 		flag = true;
-	} else if(isKeyInStr(msgContent, '666')) {
+	} else if (isKeyInStr(msgContent, '666')) {
 		console.log(msg)
 
 		resMsg = {
@@ -222,19 +269,19 @@ weixin.textMsg(function(msg) {
 
 	// 去掉前后空格并且转换成大写
 	function trim(str) {
-		return("" + str).replace(/^\s+/gi, '').replace(/\s+$/gi, '').toUpperCase();
+		return ("" + str).replace(/^\s+/gi, '').replace(/\s+$/gi, '').toUpperCase();
 	}
 
 	function isKeyInStr(str, key) {
 		str = trim(str);
 		key = trim(key);
-		if(str.indexOf(key) !== -1) {
+		if (str.indexOf(key) !== -1) {
 			return true;
 		}
 		return false;
 	}
 
-	if(flag) {
+	if (flag) {
 		weixin.sendMsg(resMsg);
 	}
 
@@ -251,26 +298,26 @@ weixin.eventMsg(function(msg) {
 	};
 
 	var eventType = msg.event
-	if(eventType === 'subscribe') {
+	if (eventType === 'subscribe') {
 		resMsg.content = 'TOM在此欢迎您！有任何疑问请回复 help 或 bz';
 		flag = true;
-	} else if(eventType === 'unsubscribe') {
+	} else if (eventType === 'unsubscribe') {
 		resMsg.content = 'TOM很伤心，为啥要取消呢?';
 		flag = true;
-	} else if(msg.event == 'CLICK') {
-		if(msg.eventKey == 'getlocationweather') {
+	} else if (msg.event == 'CLICK') {
+		if (msg.eventKey == 'getlocationweather') {
 			tianqi('', function(data) {
 				resMsg.content = data;
 				weixin.sendMsg(resMsg);
 			});
-		} else if(msg.eventKey == 'scancode_push') {
+		} else if (msg.eventKey == 'scancode_push') {
 
-		} else if(msg.eventKey == 'my_info') {
+		} else if (msg.eventKey == 'my_info') {
 			//TODO:发送的信息
 			weixin.getUser({
 				openId: msg.fromUserName
 			}, function(data) {
-				if(data.err) {
+				if (data.err) {
 					resMsg.content = '获取ERROR：' + data.msg;
 				} else {
 					resMsg.content = JSON.stringify(data.msg);
@@ -278,10 +325,10 @@ weixin.eventMsg(function(msg) {
 				weixin.sendMsg(resMsg);
 			});
 		}
-	} else if(eventType == 'scancode_waitmsg') {
+	} else if (eventType == 'scancode_waitmsg') {
 		resMsg.content = '当前操作:' + msg.scanCodeInfo.ScanType[0] + ',扫描结果:' + msg.scanCodeInfo.ScanResult[0];
 		flag = true;
-		console.log('扫描事件',msg.scanCodeInfo);
+		console.log('扫描事件', msg.scanCodeInfo);
 	}
 	/*else if(eventType === 'LOCATION') {
 		resMsg.content = '上传地理位置纬度：' + msg.Latitude + ',经度：' + msg.Longitude
@@ -291,7 +338,7 @@ weixin.eventMsg(function(msg) {
 		flag = true
 	}
 
-	if(flag) {
+	if (flag) {
 		weixin.sendMsg(resMsg);
 	}
 
