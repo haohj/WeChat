@@ -36,9 +36,17 @@ router.get('/', function(req, res, next) {
 });
 
 router.get('/index.html', function(req, res, next) {
-    res.render('home.html', {
-        menu: menu,
-    })
+
+    if (req.session.loginUser) {
+        res.render('home.html', {
+            menu: menu,
+            session: req.session,
+            name: 'sessiontest'
+        })
+    } else {
+        res.redirect(301, '/');
+    }
+
 })
 
 router.get('/content.html', function(req, res, next) {
@@ -137,48 +145,28 @@ router.post('/image-add', upload.any(), function(req, res, next) {
 // 登录接口
 router.post('/login', (req, res, next) => {
     var sess = req.session;
-    let user = util.findUser(req.body.name, req.body.password)
-    console.log(user);
-    if (user) {
-        req.session.regenerate(function(err) {
-            if (err) {
-                return res.json({
-                    ret_code: 2,
-                    ret_msg: '登录失败'
-                });
-            }
-
-            req.session.loginUser = user.name
+    wxuser.isExists(req.body.name, req.body.password).then((data) => {
+        if (data === undefined || data.length == 0) {
+            sess.errMsg = '账号或密码错误'
+        } else {
+            var user = data
+            console.log(user);
+            sess.loginUser = user
             res.redirect('/index.html')
-        });
-    } else {
-        res.json({
-            ret_code: 1,
-            ret_msg: '账号或密码错误'
-        });
-    }
+        }
+
+    }, (err) => {
+        console.log('查询失败');
+    })
+
 })
 
 // 退出登录
 router.get('/logout', function(req, res, next) {
-    // 备注：这里用的 session-file-store 在destroy 方法里，并没有销毁cookie
-    // 所以客户端的 cookie 还是存在，导致的问题 --> 退出登陆后，服务端检测到cookie
-    // 然后去查找对应的 session 文件，报错
-    // session-file-store 本身的bug  
 
-    req.session.destroy(function(err) {
-        if (err) {
-            res.json({
-                ret_code: 2,
-                ret_msg: '退出登录失败'
-            });
-            return;
-        }
-
-        req.session.loginUser = null;
-        res.clearCookie(identityKey);
-        res.redirect('/');
-    })
+    req.session.loginUser = null;
+    //res.clearCookie(identityKey);
+    res.redirect('/');
 })
 
 router.get('/wx-menu-list', (req, res, next) => {
